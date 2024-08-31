@@ -5,6 +5,7 @@ const gwidth = vaxis.gwidth;
 pub const panic = vaxis.panic_handler;
 
 pub const MAX_LOG_MESSAGES: usize = 15;
+pub const BORDER_OFFSET: u16 = 2;
 
 pub const std_options: std.Options = .{
     .log_scope_levels = &.{
@@ -127,6 +128,10 @@ const MyApp = struct {
         win.clear();
         self.vx.setMouseShape(.default);
 
+        if (self.current_screen == .MainMenu) {
+            self.drawMainMenu();
+        }
+
         const child = win.child(.{
             .x_off = (win.width / 2) - 7,
             .y_off = win.height / 2 + 1,
@@ -143,6 +148,25 @@ const MyApp = struct {
         self.drawLogs();
 
         _ = try child.printSegment(.{ .text = msg, .style = style }, .{});
+    }
+
+    fn drawMainMenu(self: *MyApp) void {
+        const win = self.vx.window();
+        const options = [_][]const u8{
+            "(N)ew entry",
+            "(C)alendar",
+        };
+
+        const options_start_y = win.height - BORDER_OFFSET;
+        for (options, 0..) |option, i| {
+            const option_win = win.child(.{
+                .x_off = BORDER_OFFSET,
+                .y_off = options_start_y - @as(u16, @intCast(i)) * 1,
+                .width = .{ .limit = option.len },
+                .height = .{ .limit = 1 },
+            });
+            _ = option_win.printSegment(.{ .text = option }, .{}) catch {};
+        }
     }
 
     pub fn drawLogs(self: *MyApp) void {
